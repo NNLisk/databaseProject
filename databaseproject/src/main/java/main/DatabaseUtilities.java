@@ -33,7 +33,10 @@ public class DatabaseUtilities {
         return null;
     }
 
-    public static void addArtist() {
+    public static void addArtist(String ID, String Name, String email, String dob) {
+
+        StringBuilder query = new StringBuilder(
+                "INSERT INTO artist (artistID, artistName, artistEmail, artistDOB) VALUES (");
 
         try {
             Connection conn = App.cp.getConnection();
