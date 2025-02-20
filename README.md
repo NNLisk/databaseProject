@@ -21,7 +21,6 @@
     + ID
     + Name
     + email
-    + phone
     + DoB 
 
 + Producer
@@ -51,6 +50,11 @@
 + FEATUREDARTISTS
     + songID (FK)
     + artist (FK)
+
++ user
+    + userID
+    + userName
+    + userPassWord
 
 
 # ERD #
