@@ -22,6 +22,8 @@ public class DatabaseUtilities {
             Connection conn = App.cp.getConnection();
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery(query);
+
+            App.cp.returnConnection(conn);
             return rs;
 
         } catch (SQLException e) {
@@ -29,5 +31,60 @@ public class DatabaseUtilities {
         }
 
         return null;
+    }
+
+    public static void addArtist() {
+
+        try {
+            Connection conn = App.cp.getConnection();
+
+            App.cp.returnConnection(conn);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void addAlbum() {
+
+        try {
+            Connection conn = App.cp.getConnection();
+
+            App.cp.returnConnection(conn);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void addWriter() {
+
+        try {
+            Connection conn = App.cp.getConnection();
+
+            App.cp.returnConnection(conn);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void addPublisher() {
+
+        try {
+            Connection conn = App.cp.getConnection();
+
+            App.cp.returnConnection(conn);
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void addUser() {
+
+        try {
+            Connection conn = App.cp.getConnection();
+
+            App.cp.returnConnection(conn);
+        } catch (Exception e) {
+
+        }
     }
 }
