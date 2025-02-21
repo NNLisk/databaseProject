@@ -15,21 +15,17 @@ public class DatabaseUtilities {
 
     }
 
-    public static ResultSet getSongs() {
-        String query = "Select * FROM songs;";
+    public static ResultSet getSongs(Connection conn) {
+        String query = "Select * FROM song;";
 
         try {
-            Connection conn = App.cp.getConnection();
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery(query);
-
-            App.cp.returnConnection(conn);
             return rs;
 
         } catch (SQLException e) {
             System.out.println("Error fetching the songs.");
         }
-
         return null;
     }
 
