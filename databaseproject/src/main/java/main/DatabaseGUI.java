@@ -18,6 +18,7 @@ public class DatabaseGUI extends JFrame {
     private DefaultTableModel tableModel;
 
     public DatabaseGUI() {
+        /* makes the panel and input fields */
         setTitle("Song Database GUI");
         setSize(800, 600);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -73,6 +74,7 @@ public class DatabaseGUI extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
 
         refreshButton.addActionListener(e -> loadSongs());
+        addButton.addActionListener(e -> addSongs());
 
         loadSongs();
 
@@ -109,5 +111,21 @@ public class DatabaseGUI extends JFrame {
         } finally {
             App.cp.returnConnection(conn);
         }
+    }
+
+    private void addSongs() {
+        Connection conn = App.cp.getConnection();
+
+            String songname = nameField.getText();
+            String songArtist = artistField.getText();
+            String songGenre = genreField.getText();
+            String songAlbum = albumField.getText();
+            String songProducer = producerField.getText();
+            String songWriter = writerField.getText();
+            String songPublisher = publisherField.getText();
+            Integer length = Integer.parseInt(lengthField.getText());
+        
+
+        DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher, length);
     }
 }

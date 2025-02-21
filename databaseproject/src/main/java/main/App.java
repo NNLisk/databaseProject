@@ -20,7 +20,7 @@ public class App {
          */
         cp = ConnectionPool.makeConnPool(
                 "jdbc:postgresql://localhost:5432/SongDataBase",
-                "postgres", "masterchief", 5, 7200);
+                "postgres", "password", 5, 7200);
 
         Connection test = cp.getConnection();
 

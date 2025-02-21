@@ -8,8 +8,10 @@ import java.sql.SQLException;
 public class DatabaseUtilities {
 
     public static void addSong(String name, String artistName, String genre, String album, String producer,
-            String writer, String publisher, String songlength) {
-    }
+            String writer, String publisher, Integer songlength) {
+            String query = "INSERT INTO song (songID, songName, artistID, albumName, genreName, writerName, producerName, publisherName, dateOfPublish, songlength)";
+            
+        }
 
     public static void addArtist(String name, String email) {
 
