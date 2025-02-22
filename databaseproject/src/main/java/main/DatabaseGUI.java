@@ -126,6 +126,6 @@ public class DatabaseGUI extends JFrame {
             Integer length = Integer.parseInt(lengthField.getText());
         
 
-        DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher, length);
+        DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher, length, conn);
     }
 }
