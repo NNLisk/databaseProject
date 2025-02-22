@@ -82,59 +82,6 @@ public class DatabaseUtilities {
 
     public static void addArtist(String ID, String Name, String email, String dob) {
 
-        StringBuilder query = new StringBuilder(
-                "INSERT INTO artist (artistID, artistName, artistEmail, artistDOB) VALUES (");
-
-        try {
-            Connection conn = App.cp.getConnection();
-
-            App.cp.returnConnection(conn);
-        } catch (Exception e) {
-
-        }
-    }
-
-    public static void addAlbum() {
-
-        try {
-            Connection conn = App.cp.getConnection();
-
-            App.cp.returnConnection(conn);
-        } catch (Exception e) {
-
-        }
-    }
-
-    public static void addWriter() {
-
-        try {
-            Connection conn = App.cp.getConnection();
-
-            App.cp.returnConnection(conn);
-        } catch (Exception e) {
-
-        }
-    }
-
-    public static void addPublisher() {
-
-        try {
-            Connection conn = App.cp.getConnection();
-
-            App.cp.returnConnection(conn);
-        } catch (Exception e) {
-
-        }
-    }
-
-    public static void addUser() {
-
-        try {
-            Connection conn = App.cp.getConnection();
-
-            App.cp.returnConnection(conn);
-        } catch (Exception e) {
-
-        }
     }
 }
+
