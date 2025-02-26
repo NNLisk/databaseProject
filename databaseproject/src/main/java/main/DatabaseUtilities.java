@@ -13,7 +13,7 @@ public class DatabaseUtilities {
 
     public static void addSong(String name, String artistName, String genre, String album, String producer,
             String writer, String publisher, Integer songlength, Connection conn) {
-            String query = "INSERT INTO song (songID, songName, artistID, albumName, genreName, producerName, writerName, publisherName, dateOfPublish, songlength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO song (songID, songName, artistID, genreName, albumName, producerName, writerName, publisherName, dateOfPublish, songlength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             boolean exists = true;
             String id = null;
             /* make a unique and nonexisting id */
@@ -62,8 +62,39 @@ public class DatabaseUtilities {
             App.cp.returnConnection(conn);
         }
 
-    public static void addArtist(String name, String email) {
+    public static void addArtist(String name, String email, String dob, Connection conn) {
+        String query = "INSERT INTO artist (artistid, artistname, artistemail, artistdob) VALUES (?, ?, ?, ?)";
+        boolean exists = true;
+        String id = null;
 
+        while (exists) {
+            id = Integer.toString((int) (Math.random() * 10000));
+            String checkQuery = "SELECT COUNT(*) FROM artist WHERE artistid = ?";
+            
+            try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                if (rs.getInt(1) > 0) {
+                    exists = true;
+                }else {exists = false;}  
+            } catch (SQLException e) {
+                System.err.println(e);
+                System.err.println("failed to fetch songs");
+            }
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, id);
+            ps.setString(2, name);
+            ps.setString(3, email);
+            ps.setString(4, dob);
+
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println("Failed to add artist, "+ e);
+        }
     }
 
     public static ResultSet getSongs(Connection conn) {

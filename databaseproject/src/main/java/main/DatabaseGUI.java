@@ -21,66 +21,79 @@ public class DatabaseGUI extends JFrame {
     public DatabaseGUI() {
         /* makes the panel and input fields */
         setTitle("Song Database GUI");
-        setSize(800, 600);
+        setSize(1400, 1000);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
         JTabbedPane tabs = new JTabbedPane();
         JPanel addSongspanel = new JPanel(new BorderLayout());
+        JPanel artistPanel = new JPanel(new BorderLayout());
 
         JPanel inputPanel = new JPanel(new GridLayout(8, 2));
         inputPanel.add(new JLabel("Name:"));
-        JTextField nameField = new JTextField();
+        nameField = new JTextField();
         inputPanel.add(nameField);
 
         inputPanel.add(new JLabel("Artist:"));
-        JTextField artistField = new JTextField();
+        artistField = new JTextField();
         inputPanel.add(artistField);
 
         inputPanel.add(new JLabel("Genre:"));
-        JTextField genreField = new JTextField();
+        genreField = new JTextField();
         inputPanel.add(genreField);
 
         inputPanel.add(new JLabel("Album:"));
-        JTextField albumField = new JTextField();
+        albumField = new JTextField();
         inputPanel.add(albumField);
 
         inputPanel.add(new JLabel("Producer:"));
-        JTextField producerField = new JTextField();
+        producerField = new JTextField();
         inputPanel.add(producerField);
 
         inputPanel.add(new JLabel("Writer:"));
-        JTextField writerField = new JTextField();
+        writerField = new JTextField();
         inputPanel.add(writerField);
 
         inputPanel.add(new JLabel("Publisher:"));
-        JTextField publisherField = new JTextField();
+        publisherField = new JTextField();
         inputPanel.add(publisherField);
 
         inputPanel.add(new JLabel("Length:"));
-        JTextField lengthField = new JTextField();
+        lengthField = new JTextField();
         inputPanel.add(lengthField);
 
         JPanel artistInputPanel = new JPanel(new GridLayout(3, 2));
         artistInputPanel.add(new JLabel("Artist name:"));
-        JTextField artistNameField = new JTextField();
+        artistNameField = new JTextField();
         artistInputPanel.add(artistNameField);
 
         artistInputPanel.add(new JLabel("email"));
-        JTextField artistEmailField = new JTextField();
-        artistInputPanel.add(artistEmailField);
-    
+        emailfield = new JTextField();
+        artistInputPanel.add(emailfield);
+
+        artistInputPanel.add(new JLabel("Date of Birth:"));
+        dobfield = new JTextField();
+        artistInputPanel.add(dobfield);
+
+        artistPanel.add(artistInputPanel, BorderLayout.NORTH);
         addSongspanel.add(inputPanel, BorderLayout.NORTH);
-        tabs.addTab("Add Songs", addSongspanel);
+
+        tabs.addTab("Register Songs", addSongspanel);
+        tabs.addTab("Register Artist", artistPanel);
 
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Add Song");
         JButton refreshButton = new JButton("Refresh Songs");
+        JPanel artistButtonPanel = new JPanel();
+        JButton addArtistButton = new JButton("Add artist");
+        
 
         buttonPanel.add(addButton);
         buttonPanel.add(refreshButton);
+        artistButtonPanel.add(addArtistButton);
 
         addSongspanel.add(buttonPanel, BorderLayout.SOUTH);
+        artistPanel.add(artistButtonPanel, BorderLayout.SOUTH);
 
         tableModel = new DefaultTableModel(
                 new String[] { "ID", "Name", "Artist", "Genre", "Album", "Producer", "Writer", "Publisher", "Length" },
@@ -134,16 +147,39 @@ public class DatabaseGUI extends JFrame {
     private void addSongs() {
         Connection conn = App.cp.getConnection();
 
-            String songname = nameField.getText();
-            String songArtist = artistField.getText();
-            String songGenre = genreField.getText();
-            String songAlbum = albumField.getText();
-            String songProducer = producerField.getText();
-            String songWriter = writerField.getText();
-            String songPublisher = publisherField.getText();
-            Integer length = Integer.parseInt(lengthField.getText());
+        String songname = nameField.getText();
+        String songArtist = artistField.getText();
+        String songGenre = genreField.getText();
+        String songAlbum = albumField.getText();
+        String songProducer = producerField.getText();
+        String songWriter = writerField.getText();
+        String songPublisher = publisherField.getText();
+        Integer length = Integer.parseInt(lengthField.getText());
+
+        nameField.setText("");
+        artistField.setText("");
+        genreField.setText("");
+        albumField.setText("");
+        producerField.setText("");
+        writerField.setText("");
+        publisherField.setText("");
+        lengthField.setText("");
         
 
         DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher, length, conn);
+        loadSongs();
+        App.cp.returnConnection(conn);
+    }
+
+    private void addArtist() {
+
+        Connection conn = App.cp.getConnection();
+        
+        String artistName = artistNameField.getText();
+        String email = emailfield.getText();
+        String dob = dobfield.getText();
+
+        DatabaseUtilities.addArtist(artistName, email, dob, conn);
+        App.cp.returnConnection(conn);
     }
 }
