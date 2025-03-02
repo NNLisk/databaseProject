@@ -115,6 +115,19 @@ public class DatabaseUtilities {
         return null;
     }
 
+    public static ResultSet getArtists(Connection conn) {
+        String query = "SELECT * FROM artist;";
+
+        try {
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery(query);
+            return rs;
+        } catch (Exception e) {
+            System.out.println("Error Fetching the artists");
+        }
+        return null;
+    }
+
     public static int deleteSongs(String songID, Connection conn) {
         String checkSong = "SELECT songid FROM song WHERE songid = ?;";
         String query = "DELETE FROM song WHERE songid = ?;";
@@ -126,24 +139,25 @@ public class DatabaseUtilities {
              * returns status code
              * 0 for succesful deletion
              * -1 for any error
+             * -2 for song not founds
              */
             conn.setAutoCommit(false);
-            PreparedStatement psSongCheck = conn.prepareStatement(checkSong);
-            psSongCheck.setString(1, songID);
-            ResultSet rs = psSongCheck.executeQuery();
+            PreparedStatement ps = conn.prepareStatement(checkSong);
+            ps.setString(1, songID);
+            ResultSet rs = ps.executeQuery();
 
             if (!rs.next()) {
-                return -1;
+                return -2;
             }
         } catch (SQLException e) {
             System.err.println(e);
         }
 
         try {
-            PreparedStatement psQuery = conn.prepareStatement(query);
-            psQuery.setString(1, songID);
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, songID);
 
-            int deletedRows = psQuery.executeUpdate();
+            int deletedRows = ps.executeUpdate();
 
             if (deletedRows > 0) {
                 conn.commit();
@@ -156,6 +170,91 @@ public class DatabaseUtilities {
             }
         } catch (SQLException e) {
             System.out.println("error");
+            return -1;
+        }
+    }
+
+    public static int deleteArtist(String artistID, Connection conn) {
+        String checkArtist = "SELECT artistid FROM artist WHERE artistid = ?;";
+        String query = "DELETE FROM artist WHERE artistid = ?;";
+
+        try {
+            /* transaction start */
+
+            /* same status codes as in delete song */
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement(checkArtist);
+            ps.setString(1, artistID);
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.next()) {
+                return -2;
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, artistID);
+
+            int deletedRows = ps.executeUpdate();
+
+            if (deletedRows > 0) {
+                conn.commit();
+                System.out.println("deletion successfull of Artist with id: " + artistID);
+                return 0;
+            } else {
+                conn.rollback();
+                System.out.println("Artist not deleted");
+                return -1;
+            }
+        } catch (SQLException e) {
+            System.out.println("error");
+            return -1;
+        }
+    }
+
+    public static int updateSongName(Connection conn, String songID, String songName) {
+        String checkSongExistence = "SELECT songID FROM song WHERE songID = ?;";
+        String query = "UPDATE song SET songName = ? WHERE songID = ?;";
+
+        try {
+            /* transaction start */
+
+            /* status messages same as in deleteSong */
+            conn.setAutoCommit(false);
+
+            PreparedStatement ps = conn.prepareStatement(checkSongExistence);
+            ps.setString(1, songID);
+
+            ResultSet rs = ps.executeQuery(checkSongExistence);
+
+            if (!rs.next()) {
+                return -2;
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(query);
+            ps.setString(1, songName);
+            ps.setString(2, songID);
+
+            int changedRows = ps.executeUpdate();
+
+            if (changedRows > 0) {
+                conn.commit();
+                System.out.println("Song name updated with id: " + songID);
+                return 0;
+            } else {
+                conn.rollback();
+                System.out.println("Song not found");
+                return -1;
+            }
+        } catch (SQLException e) {
+            System.err.println(e);
             return -1;
         }
     }

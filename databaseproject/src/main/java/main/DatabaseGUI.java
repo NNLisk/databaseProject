@@ -13,12 +13,7 @@ import java.util.ArrayList;
  */
 
 public class DatabaseGUI extends JFrame {
-    /* Here all textinputs, tab specifically */
-    private JTextField nameField, artistField, genreField, albumField, producerField, writerField, publisherField,
-            lengthField;
-    private JTextField artistNameField, emailfield, dobfield;
-    private JTextField songIDField;
-    private JTextField cngSongIdField, newSongNameField;
+    private JTextField songIDField, cngSongIdField, newSongNameField, deleteArtistIDField;
     private JTable songTable;
     private JTable artistTable;
     private DefaultTableModel songTableModel;
@@ -38,8 +33,10 @@ public class DatabaseGUI extends JFrame {
         JPanel artistPanel = new JPanel(new BorderLayout());
         JPanel deleteSongPanel = new JPanel(new BorderLayout());
         JPanel changeSongNamePanel = new JPanel(new BorderLayout());
+        JPanel deleteArtistPanel = new JPanel(new BorderLayout());
 
         String[] addSongTitles = { "Name", "Artist", "Genre", "Album", "Producer", "Writer", "Publisher", "Length" };
+        String[] addArtistTitles = { "Artist name", "Email", "Date of Birth" };
 
         JPanel songInputs = new JPanel(new GridLayout(8, 2));
 
@@ -50,22 +47,22 @@ public class DatabaseGUI extends JFrame {
         }
 
         JPanel artistInputs = new JPanel(new GridLayout(3, 2));
-        artistInputs.add(new JLabel("Artist name:"));
-        artistNameField = new JTextField();
-        artistInputs.add(artistNameField);
 
-        artistInputs.add(new JLabel("email"));
-        emailfield = new JTextField();
-        artistInputs.add(emailfield);
-
-        artistInputs.add(new JLabel("Date of Birth:"));
-        dobfield = new JTextField();
-        artistInputs.add(dobfield);
+        for (String title : addArtistTitles) {
+            artistInputs.add(new JLabel(title));
+            JTextField field = new JTextField();
+            artistInputs.add(field);
+        }
 
         JPanel deleteSongInputs = new JPanel(new GridLayout(1, 2));
-        deleteSongInputs.add(new JLabel("SongID: "));
+        deleteSongInputs.add(new JLabel("Song ID: "));
         songIDField = new JTextField();
         deleteSongInputs.add(songIDField);
+
+        JPanel deleteArtistInputs = new JPanel(new GridLayout(1, 2));
+        deleteArtistInputs.add(new JLabel("Artist ID: "));
+        deleteArtistIDField = new JTextField();
+        deleteArtistInputs.add(deleteArtistIDField);
 
         JPanel changeSongInputs = new JPanel(new GridLayout(2, 2));
         changeSongInputs.add(new JLabel("SongID: "));
@@ -80,31 +77,35 @@ public class DatabaseGUI extends JFrame {
         addSongspanel.add(songInputs, BorderLayout.NORTH);
         deleteSongPanel.add(deleteSongInputs, BorderLayout.NORTH);
         changeSongNamePanel.add(changeSongInputs, BorderLayout.NORTH);
+        deleteArtistPanel.add(deleteArtistInputs, BorderLayout.NORTH);
 
         managementTabs.addTab("Register Songs", addSongspanel);
         managementTabs.addTab("Register Artist", artistPanel);
         managementTabs.addTab("Delete Songs", deleteSongPanel);
+        managementTabs.addTab("Delete Artists", deleteArtistPanel);
         managementTabs.addTab("Change Song Name", changeSongNamePanel);
 
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Add Song");
-        JButton refreshButton = new JButton("Refresh Songs");
         JPanel artistButtonPanel = new JPanel();
         JButton addArtistButton = new JButton("Add artist");
         JPanel deleteButtonPanel = new JPanel();
         JButton deleteButton = new JButton("Delete Song");
         JPanel cngSongButtonPanel = new JPanel();
         JButton updateName = new JButton("Update Song Name");
+        JPanel deleteArtistbuttons = new JPanel();
+        JButton deleteArtist = new JButton("Delete artist");
 
         buttonPanel.add(addButton);
-        buttonPanel.add(refreshButton);
         artistButtonPanel.add(addArtistButton);
         deleteButtonPanel.add(deleteButton);
+        deleteArtistbuttons.add(deleteArtist);
         cngSongButtonPanel.add(updateName);
 
         addSongspanel.add(buttonPanel, BorderLayout.SOUTH);
         artistPanel.add(artistButtonPanel, BorderLayout.SOUTH);
         deleteSongPanel.add(deleteButtonPanel, BorderLayout.SOUTH);
+        deleteArtistPanel.add(deleteArtistbuttons, BorderLayout.SOUTH);
         changeSongNamePanel.add(updateName, BorderLayout.SOUTH);
 
         songTableModel = new DefaultTableModel(
@@ -121,12 +122,14 @@ public class DatabaseGUI extends JFrame {
         add(managementTabs, BorderLayout.NORTH);
         add(tableTabs, BorderLayout.CENTER);
 
-        refreshButton.addActionListener(e -> loadSongs());
         addButton.addActionListener(e -> addSongs(songInputs));
-        addArtistButton.addActionListener(e -> addArtist());
+        addArtistButton.addActionListener(e -> addArtist(artistInputs));
         deleteButton.addActionListener(e -> deleteSong());
+        deleteArtist.addActionListener(e -> deleteArtist());
+        updateName.addActionListener(e -> updateSongName());
 
         loadSongs();
+        loadArtists();
         setVisible(true);
     }
 
@@ -162,6 +165,33 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
+    private void loadArtists() {
+        Connection conn = App.cp.getConnection();
+        artistTableModel.setRowCount(0);
+        try {
+            ResultSet rs = DatabaseUtilities.getArtists(conn);
+
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    while (rs.next()) {
+                        artistTableModel.addRow(new Object[] {
+                                rs.getString("artistID"),
+                                rs.getString("artistName"),
+                                rs.getString("artistEmail"),
+                                rs.getString("artistDoB")
+                        });
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "ErrorLoadingArtists1" + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading Artists2: " + e.getMessage());
+        } finally {
+            App.cp.returnConnection(conn);
+        }
+    }
+
     private void addSongs(JPanel songinfo) {
         Connection conn = App.cp.getConnection();
 
@@ -190,19 +220,25 @@ public class DatabaseGUI extends JFrame {
         App.cp.returnConnection(conn);
     }
 
-    private void addArtist() {
+    private void addArtist(JPanel artistinfo) {
 
         Connection conn = App.cp.getConnection();
 
-        String artistName = artistNameField.getText();
-        String email = emailfield.getText();
-        String dob = dobfield.getText();
+        ArrayList<String> artistInfo = new ArrayList<>();
 
-        artistNameField.setText("");
-        emailfield.setText("");
-        dobfield.setText("");
+        for (Component component : artistinfo.getComponents()) {
+            if (component instanceof JTextField) {
+                artistInfo.add(((JTextField) component).getText());
+                ((JTextField) component).setText("");
+            }
+        }
+
+        String artistName = artistInfo.get(0);
+        String email = artistInfo.get(1);
+        String dob = artistInfo.get(2);
 
         DatabaseUtilities.addArtist(artistName, email, dob, conn);
+        loadArtists();
         App.cp.returnConnection(conn);
     }
 
@@ -214,8 +250,58 @@ public class DatabaseGUI extends JFrame {
         int status = DatabaseUtilities.deleteSongs(songID, conn);
         loadSongs();
 
-        if (status == -1) {
-            JOptionPane.showMessageDialog(null, "Song with id not found", "Error", JOptionPane.INFORMATION_MESSAGE);
+        switch (status) {
+            case 0:
+                JOptionPane.showMessageDialog(null, "Song Removed", "Update succesful",
+                        JOptionPane.INFORMATION_MESSAGE);
+                break;
+            case -1:
+                JOptionPane.showMessageDialog(null, "Connection Error", "Error", JOptionPane.ERROR_MESSAGE);
+            case -2:
+                JOptionPane.showMessageDialog(null, "Song with id not found", "Error", JOptionPane.ERROR_MESSAGE);
+                break;
         }
+    }
+
+    private void deleteArtist() {
+        Connection conn = App.cp.getConnection();
+
+        String artistID = deleteArtistIDField.getText();
+
+        int status = DatabaseUtilities.deleteArtist(artistID, conn);
+        loadArtists();
+
+        switch (status) {
+            case 0:
+                JOptionPane.showMessageDialog(null, "Artist Removed", "Update succesful",
+                        JOptionPane.INFORMATION_MESSAGE);
+                break;
+            case -1:
+                JOptionPane.showMessageDialog(null, "Connection Error", "Error", JOptionPane.ERROR_MESSAGE);
+            case -2:
+                JOptionPane.showMessageDialog(null, "Artist with id not found", "Error", JOptionPane.ERROR_MESSAGE);
+                break;
+        }
+    }
+
+    public void updateSongName() {
+        Connection conn = App.cp.getConnection();
+        String songID = cngSongIdField.getText();
+        String newName = newSongNameField.getText();
+
+        int status = DatabaseUtilities.updateSongName(conn, songID, newName);
+
+        switch (status) {
+            case 0:
+                JOptionPane.showMessageDialog(null, "Song Updated", "Update succesful",
+                        JOptionPane.INFORMATION_MESSAGE);
+                break;
+            case -1:
+                JOptionPane.showMessageDialog(null, "Connection Error", "Error", JOptionPane.ERROR_MESSAGE);
+            case -2:
+                JOptionPane.showMessageDialog(null, "Song with id not found", "Error", JOptionPane.ERROR_MESSAGE);
+                break;
+        }
+        loadSongs();
     }
 }
