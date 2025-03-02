@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
+import java.util.ArrayList;
 
 /* AI note: AI in this project is used for implementing some of the gui
  * and creating the exe files. Main database functionality is with few
@@ -12,12 +13,16 @@ import java.sql.*;
  */
 
 public class DatabaseGUI extends JFrame {
+    /* Here all textinputs, tab specifically */
     private JTextField nameField, artistField, genreField, albumField, producerField, writerField, publisherField,
             lengthField;
     private JTextField artistNameField, emailfield, dobfield;
     private JTextField songIDField;
-    private JTable table;
-    private DefaultTableModel tableModel;
+    private JTextField cngSongIdField, newSongNameField;
+    private JTable songTable;
+    private JTable artistTable;
+    private DefaultTableModel songTableModel;
+    private DefaultTableModel artistTableModel;
 
     public DatabaseGUI() {
         /* makes the panel and input fields */
@@ -26,69 +31,60 @@ public class DatabaseGUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        JTabbedPane tabs = new JTabbedPane();
+        JTabbedPane managementTabs = new JTabbedPane();
+        JTabbedPane tableTabs = new JTabbedPane();
+
         JPanel addSongspanel = new JPanel(new BorderLayout());
         JPanel artistPanel = new JPanel(new BorderLayout());
         JPanel deleteSongPanel = new JPanel(new BorderLayout());
+        JPanel changeSongNamePanel = new JPanel(new BorderLayout());
 
-        JPanel inputPanel = new JPanel(new GridLayout(8, 2));
-        inputPanel.add(new JLabel("Name:"));
-        nameField = new JTextField();
-        inputPanel.add(nameField);
+        String[] addSongTitles = { "Name", "Artist", "Genre", "Album", "Producer", "Writer", "Publisher", "Length" };
 
-        inputPanel.add(new JLabel("Artist:"));
-        artistField = new JTextField();
-        inputPanel.add(artistField);
+        JPanel songInputs = new JPanel(new GridLayout(8, 2));
 
-        inputPanel.add(new JLabel("Genre:"));
-        genreField = new JTextField();
-        inputPanel.add(genreField);
+        for (String title : addSongTitles) {
+            songInputs.add(new JLabel(title));
+            JTextField field = new JTextField();
+            songInputs.add(field);
+        }
 
-        inputPanel.add(new JLabel("Album:"));
-        albumField = new JTextField();
-        inputPanel.add(albumField);
-
-        inputPanel.add(new JLabel("Producer:"));
-        producerField = new JTextField();
-        inputPanel.add(producerField);
-
-        inputPanel.add(new JLabel("Writer:"));
-        writerField = new JTextField();
-        inputPanel.add(writerField);
-
-        inputPanel.add(new JLabel("Publisher:"));
-        publisherField = new JTextField();
-        inputPanel.add(publisherField);
-
-        inputPanel.add(new JLabel("Length:"));
-        lengthField = new JTextField();
-        inputPanel.add(lengthField);
-
-        JPanel artistInputPanel = new JPanel(new GridLayout(3, 2));
-        artistInputPanel.add(new JLabel("Artist name:"));
+        JPanel artistInputs = new JPanel(new GridLayout(3, 2));
+        artistInputs.add(new JLabel("Artist name:"));
         artistNameField = new JTextField();
-        artistInputPanel.add(artistNameField);
+        artistInputs.add(artistNameField);
 
-        artistInputPanel.add(new JLabel("email"));
+        artistInputs.add(new JLabel("email"));
         emailfield = new JTextField();
-        artistInputPanel.add(emailfield);
+        artistInputs.add(emailfield);
 
-        artistInputPanel.add(new JLabel("Date of Birth:"));
+        artistInputs.add(new JLabel("Date of Birth:"));
         dobfield = new JTextField();
-        artistInputPanel.add(dobfield);
+        artistInputs.add(dobfield);
 
         JPanel deleteSongInputs = new JPanel(new GridLayout(1, 2));
         deleteSongInputs.add(new JLabel("SongID: "));
         songIDField = new JTextField();
         deleteSongInputs.add(songIDField);
 
-        artistPanel.add(artistInputPanel, BorderLayout.NORTH);
-        addSongspanel.add(inputPanel, BorderLayout.NORTH);
-        deleteSongPanel.add(deleteSongInputs, BorderLayout.NORTH);
+        JPanel changeSongInputs = new JPanel(new GridLayout(2, 2));
+        changeSongInputs.add(new JLabel("SongID: "));
+        cngSongIdField = new JTextField();
+        changeSongInputs.add(cngSongIdField);
 
-        tabs.addTab("Register Songs", addSongspanel);
-        tabs.addTab("Register Artist", artistPanel);
-        tabs.addTab("Delete Songs", deleteSongPanel);
+        changeSongInputs.add(new JLabel("New Song Name"));
+        newSongNameField = new JTextField();
+        changeSongInputs.add(newSongNameField);
+
+        artistPanel.add(artistInputs, BorderLayout.NORTH);
+        addSongspanel.add(songInputs, BorderLayout.NORTH);
+        deleteSongPanel.add(deleteSongInputs, BorderLayout.NORTH);
+        changeSongNamePanel.add(changeSongInputs, BorderLayout.NORTH);
+
+        managementTabs.addTab("Register Songs", addSongspanel);
+        managementTabs.addTab("Register Artist", artistPanel);
+        managementTabs.addTab("Delete Songs", deleteSongPanel);
+        managementTabs.addTab("Change Song Name", changeSongNamePanel);
 
         JPanel buttonPanel = new JPanel();
         JButton addButton = new JButton("Add Song");
@@ -97,27 +93,36 @@ public class DatabaseGUI extends JFrame {
         JButton addArtistButton = new JButton("Add artist");
         JPanel deleteButtonPanel = new JPanel();
         JButton deleteButton = new JButton("Delete Song");
+        JPanel cngSongButtonPanel = new JPanel();
+        JButton updateName = new JButton("Update Song Name");
 
         buttonPanel.add(addButton);
         buttonPanel.add(refreshButton);
         artistButtonPanel.add(addArtistButton);
         deleteButtonPanel.add(deleteButton);
+        cngSongButtonPanel.add(updateName);
 
         addSongspanel.add(buttonPanel, BorderLayout.SOUTH);
         artistPanel.add(artistButtonPanel, BorderLayout.SOUTH);
         deleteSongPanel.add(deleteButtonPanel, BorderLayout.SOUTH);
+        changeSongNamePanel.add(updateName, BorderLayout.SOUTH);
 
-        tableModel = new DefaultTableModel(
+        songTableModel = new DefaultTableModel(
                 new String[] { "ID", "Name", "Artist", "Genre", "Album", "Producer", "Writer", "Publisher", "Length" },
                 0);
-        table = new JTable(tableModel);
+        songTable = new JTable(songTableModel);
 
-        add(tabs, BorderLayout.NORTH);
-        add(new JScrollPane(table), BorderLayout.CENTER);
-        /* add(buttonPanel, BorderLayout.SOUTH); */
+        artistTableModel = new DefaultTableModel(new String[] { "ID", "Name", "Email", "Date Of Birth" }, 0);
+        artistTable = new JTable(artistTableModel);
+
+        tableTabs.addTab("Songs", new JScrollPane(songTable));
+        tableTabs.addTab("Artists", new JScrollPane(artistTable));
+
+        add(managementTabs, BorderLayout.NORTH);
+        add(tableTabs, BorderLayout.CENTER);
 
         refreshButton.addActionListener(e -> loadSongs());
-        addButton.addActionListener(e -> addSongs());
+        addButton.addActionListener(e -> addSongs(songInputs));
         addArtistButton.addActionListener(e -> addArtist());
         deleteButton.addActionListener(e -> deleteSong());
 
@@ -127,14 +132,14 @@ public class DatabaseGUI extends JFrame {
 
     private void loadSongs() {
         Connection conn = App.cp.getConnection();
-        tableModel.setRowCount(0);
+        songTableModel.setRowCount(0);
         try {
             ResultSet rs = DatabaseUtilities.getSongs(conn);
 
             SwingUtilities.invokeLater(() -> {
                 try {
                     while (rs.next()) {
-                        tableModel.addRow(new Object[] {
+                        songTableModel.addRow(new Object[] {
                                 rs.getString("songID"),
                                 rs.getString("songName"),
                                 rs.getString("artistID"),
@@ -157,26 +162,26 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
-    private void addSongs() {
+    private void addSongs(JPanel songinfo) {
         Connection conn = App.cp.getConnection();
 
-        String songname = nameField.getText();
-        String songArtist = artistField.getText();
-        String songGenre = genreField.getText();
-        String songAlbum = albumField.getText();
-        String songProducer = producerField.getText();
-        String songWriter = writerField.getText();
-        String songPublisher = publisherField.getText();
-        Integer length = Integer.parseInt(lengthField.getText());
+        ArrayList<String> songInfo = new ArrayList<>();
 
-        nameField.setText("");
-        artistField.setText("");
-        genreField.setText("");
-        albumField.setText("");
-        producerField.setText("");
-        writerField.setText("");
-        publisherField.setText("");
-        lengthField.setText("");
+        for (Component component : songinfo.getComponents()) {
+            if (component instanceof JTextField) {
+                songInfo.add(((JTextField) component).getText());
+                ((JTextField) component).setText("");
+            }
+        }
+
+        String songname = songInfo.get(0);
+        String songArtist = songInfo.get(1);
+        String songGenre = songInfo.get(2);
+        String songAlbum = songInfo.get(3);
+        String songProducer = songInfo.get(4);
+        String songWriter = songInfo.get(5);
+        String songPublisher = songInfo.get(6);
+        Integer length = Integer.parseInt(songInfo.get(7));
 
         DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher,
                 length, conn);
