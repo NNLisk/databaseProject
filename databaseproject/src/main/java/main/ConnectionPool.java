@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
 /* Class makes a pool of premade connections that are handed out and returned. this prevents having
  * to create new connections whenever database needs to be interacted with */
