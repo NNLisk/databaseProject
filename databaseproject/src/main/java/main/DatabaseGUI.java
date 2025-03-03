@@ -134,8 +134,6 @@ public class DatabaseGUI extends JFrame {
 
     private void loadSongs() {
         Connection conn = App.cp.getConnection();
-
-        String artistName = null;
         
         songTableModel.setRowCount(0);
         try {
@@ -147,7 +145,7 @@ public class DatabaseGUI extends JFrame {
                         songTableModel.addRow(new Object[] {
                                 rs.getString("songID"),
                                 rs.getString("songName"),
-                                artistName,
+                                rs.getString("artistName"),
                                 rs.getString("genreName"),
                                 rs.getString("albumName"),
                                 rs.getString("producerName"),

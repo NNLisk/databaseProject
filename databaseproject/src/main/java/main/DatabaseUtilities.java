@@ -118,7 +118,7 @@ public class DatabaseUtilities {
     }
 
     public static ResultSet getSongs(Connection conn) {
-        String query = "Select * FROM song;";
+        String query = "Select * FROM song JOIN artist ON song.artistID = artist.artistID;";
 
         try {
             Statement s = conn.createStatement();
