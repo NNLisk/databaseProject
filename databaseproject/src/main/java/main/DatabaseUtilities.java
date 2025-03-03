@@ -24,6 +24,7 @@ public class DatabaseUtilities {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
         String id = uniqueID("song");
+        System.out.println("checking artist");
         
         
         try {
@@ -32,13 +33,14 @@ public class DatabaseUtilities {
             
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
+                System.out.println("Artist not found");
                 throw new SQLException("Artist Not Found");
             }
             artistID = rs.getString("artistid");
         } catch (Exception e) {
             System.out.println("Failed to fetch artists" + e);
         }
-        
+
         addAlbum(album, artistID);
         addGenre(genre);
 
@@ -56,6 +58,7 @@ public class DatabaseUtilities {
             ps.setString(8, publisher);
             ps.setString(9, today.format(formatter));
             ps.setInt(10, songlength);
+            System.out.println("Adding song");
             ps.executeUpdate();
             System.out.println("Song added");
         } catch (Exception e) {
@@ -70,17 +73,19 @@ public class DatabaseUtilities {
 
         String albumID = uniqueID("album");
         Connection conn = App.cp.getConnection();
+        System.out.println("adding album");
         
         try {
             PreparedStatement ps = conn.prepareStatement(albumCheck);
             ps.setString(1, albumName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()){
+                System.out.println("song already exists");
                 return;
             }
 
         } catch (Exception e) {
-            System.err.println(e + "1");
+            System.err.println(e);
         }
         try {
             PreparedStatement ps = conn.prepareStatement(addAlbum);
@@ -88,8 +93,9 @@ public class DatabaseUtilities {
             ps.setString(2, albumName);
             ps.setString(3, artistID);
             ps.executeQuery();
+            System.out.println("album added");
         } catch (Exception e) {
-            System.err.println(e + "2");
+            System.err.println(e);
         }
         App.cp.returnConnection(conn);
     }
@@ -100,16 +106,18 @@ public class DatabaseUtilities {
 
         String genreID = uniqueID("genre");
         Connection conn = App.cp.getConnection();
+        System.out.println("adding Genre");
 
         try {
             PreparedStatement ps = conn.prepareStatement(genreCheck);
             ps.setString(1, genreName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()){
+                System.out.println("genre already exists");
                 return;
             }
         } catch (Exception e) {
-            System.err.println(e + "3");
+            System.err.println(e);
         }
 
         try {
@@ -117,8 +125,9 @@ public class DatabaseUtilities {
             ps.setString(1, genreID);
             ps.setString(2, genreName);
             ps.executeUpdate();
+            System.out.println("Genre added");
         } catch (Exception e) {
-            System.err.println(e + "4");
+            System.err.println(e);
         }
         App.cp.returnConnection(conn);
     }
@@ -129,12 +138,14 @@ public class DatabaseUtilities {
 
         String writerID = uniqueID("writer");
         Connection conn = App.cp.getConnection();
+        System.out.println("adding writer");
 
         try {
             PreparedStatement ps = conn.prepareStatement(writerCheck);
             ps.setString(1, writerName);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
+                System.out.println("Genre already exists");
                 return;
             }
         } catch (Exception e) {
@@ -145,6 +156,7 @@ public class DatabaseUtilities {
             ps.setString(1, writerID);
             ps.setString(2, writerName);
             ps.executeUpdate();
+            System.out.println("writer added");
         } catch (Exception e) {
             System.err.println(e);
         }
@@ -157,6 +169,7 @@ public class DatabaseUtilities {
 
         String pubID = uniqueID("publisher");
         Connection conn = App.cp.getConnection();
+        System.out.println("adding publisher");
 
         try {
             System.out.println("checking publisher existence");
@@ -168,13 +181,24 @@ public class DatabaseUtilities {
                 return;
             }
         } catch (Exception e) {
-            // TODO: handle exception
+            System.err.println(e);
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(addPublisher);
+            ps.setString(1, pubID);
+            ps.setString(2, publisherName);
+            ps.executeUpdate();
+            System.out.println("publisher added");
+        } catch (Exception e) {
+            System.err.println();
         }
     }
 
     public static void addArtist(String name, String email, String dob, Connection conn) {
         String query = "INSERT INTO artist (artistid, artistname, artistemail, artistdob) VALUES (?, ?, ?, ?)";
         String id = null;
+        System.out.println("adding artist");
 
         id = uniqueID("artist");
 
@@ -184,8 +208,8 @@ public class DatabaseUtilities {
             ps.setString(2, name);
             ps.setString(3, email);
             ps.setString(4, dob);
-
             ps.executeUpdate();
+            System.out.println("artist added");
         } catch (Exception e) {
             System.err.println("Failed to add artist, " + e);
         }
@@ -195,6 +219,7 @@ public class DatabaseUtilities {
         String query = "Select * FROM song JOIN artist ON song.artistID = artist.artistID;";
 
         try {
+            System.out.println("getting songs");
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery(query);
             return rs;
@@ -209,6 +234,7 @@ public class DatabaseUtilities {
         String query = "SELECT * FROM artist;";
 
         try {
+            System.out.println("getting songs");
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery(query);
             return rs;
@@ -221,7 +247,7 @@ public class DatabaseUtilities {
     public static int deleteSongs(String songID, Connection conn) {
         String checkSong = "SELECT songid FROM song WHERE songid = ?;";
         String query = "DELETE FROM song WHERE songid = ?;";
-
+        System.out.println("deleting songs");
         try {
             /* transaction start */
 
@@ -231,12 +257,14 @@ public class DatabaseUtilities {
              * -1 for any error
              * -2 for song not founds
              */
+            System.out.println("starting transaction");
             conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement(checkSong);
             ps.setString(1, songID);
             ResultSet rs = ps.executeQuery();
 
             if (!rs.next()) {
+                System.out.println("song doesn't exist");
                 return -2;
             }
         } catch (SQLException e) {
@@ -267,7 +295,7 @@ public class DatabaseUtilities {
     public static int deleteArtist(String artistID, Connection conn) {
         String checkArtist = "SELECT artistid FROM artist WHERE artistid = ?;";
         String query = "DELETE FROM artist WHERE artistid = ?;";
-
+        System.out.println("deleting artist");
         try {
             /* transaction start */
 
@@ -278,6 +306,7 @@ public class DatabaseUtilities {
             ResultSet rs = ps.executeQuery();
 
             if (!rs.next()) {
+                System.out.println("artist doesnt exist");
                 return -2;
             }
         } catch (SQLException e) {
@@ -313,6 +342,7 @@ public class DatabaseUtilities {
             /* transaction start */
 
             /* status messages same as in deleteSong */
+            System.out.println("transaction started");
             conn.setAutoCommit(false);
 
             PreparedStatement ps = conn.prepareStatement(checkSongExistence);
@@ -321,6 +351,7 @@ public class DatabaseUtilities {
             ResultSet rs = ps.executeQuery(checkSongExistence);
 
             if (!rs.next()) {
+                System.out.println("song doesn't exist");
                 return -2;
             }
         } catch (Exception e) {
@@ -353,7 +384,7 @@ public class DatabaseUtilities {
         String id = null;
         Connection conn = App.cp.getConnection();
         boolean exists = true;
-
+        System.out.println("getting an id");
         while (exists) {
             id = Integer.toString((int) (Math.random() * 10000));
             String checkQuery = "SELECT COUNT(*) FROM " + tablename + " WHERE " + tablename + "ID = ?";
@@ -373,6 +404,7 @@ public class DatabaseUtilities {
                 return null;
             }
         }
+        System.out.println("returning id");
         return id;
     }
 }

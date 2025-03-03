@@ -58,6 +58,7 @@ public class ConnectionPool {
      */
 
     public synchronized Connection getConnection() {
+        System.out.println("getting connection");
         if (this.state == States.shuttingDown || this.state == States.shutDown) {
             return null;
         }
@@ -72,6 +73,7 @@ public class ConnectionPool {
     }
 
     public synchronized void returnConnection(Connection conn) {
+        System.out.println("connection returned");
         connPool.add(conn);
         notify();
     }
@@ -79,6 +81,7 @@ public class ConnectionPool {
     /* pool shutdown mechanism */
 
     public synchronized void shutDown() {
+        System.out.println("shutting down");
         if (this.state == States.initializing) {
             for (Connection conn : connPool) {
                 try {
