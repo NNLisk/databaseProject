@@ -116,7 +116,7 @@ public class DatabaseGUI extends JFrame {
         genreTableModel = new DefaultTableModel(new String[] { "GenreID", "Genre Name" }, 0);
         genreTable = new JTable(genreTableModel);
 
-        albumTableModel = new DefaultTableModel(new String[] { "Album id", "Album Name", "Artist ID" }, 0);
+        albumTableModel = new DefaultTableModel(new String[] { "Album id", "Album Name", "Artist Name" }, 0);
         albumTable = new JTable(albumTableModel);
 
         tableTabs.addTab("Songs", new JScrollPane(songTable));
@@ -240,7 +240,7 @@ public class DatabaseGUI extends JFrame {
                         albumTableModel.addRow(new Object[] {
                                 rs.getString("albumID"),
                                 rs.getString("albumName"),
-                                rs.getString("artistID")
+                                rs.getString("artistName")
                         });
                     }
                 } catch (Exception e) {

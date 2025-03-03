@@ -249,7 +249,7 @@ public class DatabaseUtilities {
     }
 
     public static ResultSet getAlbums(Connection conn) {
-        String query = "SELECT * FROM album;";
+        String query = "SELECT * FROM album JOIN artist ON album.artistID = artist.artistID;";
 
         try {
             System.out.println("getting albums");
