@@ -13,10 +13,8 @@ import java.util.ArrayList;
 
 public class DatabaseGUI extends JFrame {
     private JTextField songIDField, cngSongIdField, newSongNameField, deleteArtistIDField;
-    private JTable songTable;
-    private JTable artistTable;
-    private DefaultTableModel songTableModel;
-    private DefaultTableModel artistTableModel;
+    private JTable songTable, artistTable, genreTable, albumTable;
+    private DefaultTableModel songTableModel, artistTableModel, genreTableModel, albumTableModel;
 
     public DatabaseGUI() {
         /* makes the panel and input fields */
@@ -115,8 +113,16 @@ public class DatabaseGUI extends JFrame {
         artistTableModel = new DefaultTableModel(new String[] { "ID", "Name", "Email", "Date Of Birth" }, 0);
         artistTable = new JTable(artistTableModel);
 
+        genreTableModel = new DefaultTableModel(new String[] { "GenreID", "Genre Name" }, 0);
+        genreTable = new JTable(genreTableModel);
+
+        albumTableModel = new DefaultTableModel(new String[] { "Album id", "Album Name", "Artist ID" }, 0);
+        albumTable = new JTable(albumTableModel);
+
         tableTabs.addTab("Songs", new JScrollPane(songTable));
         tableTabs.addTab("Artists", new JScrollPane(artistTable));
+        tableTabs.addTab("Genres", new JScrollPane(genreTable));
+        tableTabs.addTab("Albums", new JScrollPane(albumTable));
 
         add(managementTabs, BorderLayout.NORTH);
         add(tableTabs, BorderLayout.CENTER);
@@ -129,12 +135,15 @@ public class DatabaseGUI extends JFrame {
 
         loadSongs();
         loadArtists();
+        loadGenres();
+        loadAlbums();
         setVisible(true);
     }
 
+    /* BELOW IS ALL THE LOADER METHODS FOR TABLES */
     private void loadSongs() {
         Connection conn = App.cp.getConnection();
-        
+
         songTableModel.setRowCount(0);
         try {
             ResultSet rs = DatabaseUtilities.getSongs(conn);
@@ -192,6 +201,59 @@ public class DatabaseGUI extends JFrame {
         }
     }
 
+    private void loadGenres() {
+        Connection conn = App.cp.getConnection();
+
+        genreTableModel.setRowCount(0);
+        try {
+            ResultSet rs = DatabaseUtilities.getGenres(conn);
+
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    while (rs.next()) {
+                        genreTableModel.addRow(new Object[] {
+                                rs.getString("genreID"),
+                                rs.getString("genrename"),
+                        });
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "ErrorLoadingGenres" + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading Genres: " + e.getMessage());
+        } finally {
+            App.cp.returnConnection(conn);
+        }
+    }
+
+    private void loadAlbums() {
+        Connection conn = App.cp.getConnection();
+
+        albumTableModel.setRowCount(0);
+        try {
+            ResultSet rs = DatabaseUtilities.getAlbums(conn);
+
+            SwingUtilities.invokeLater(() -> {
+                try {
+                    while (rs.next()) {
+                        albumTableModel.addRow(new Object[] {
+                                rs.getString("albumID"),
+                                rs.getString("albumName"),
+                                rs.getString("artistID")
+                        });
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(this, "ErrorLoadingAlbums" + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error loading Albums: " + e.getMessage());
+        } finally {
+            App.cp.returnConnection(conn);
+        }
+    }
+
     private void addSongs(JPanel songinfo) {
         Connection conn = App.cp.getConnection();
 
@@ -213,14 +275,18 @@ public class DatabaseGUI extends JFrame {
         String songPublisher = songInfo.get(6);
         Integer length = Integer.parseInt(songInfo.get(7));
 
-
         try {
-            DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher,
+            DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter,
+                    songPublisher,
                     length, conn);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Artist does not exist, please register artist first", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Artist does not exist, please register artist first", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
         loadSongs();
+        loadArtists();
+        loadGenres();
+        loadAlbums();
         JOptionPane.showMessageDialog(null, "Song added", "Error", JOptionPane.INFORMATION_MESSAGE);
         App.cp.returnConnection(conn);
     }
@@ -275,6 +341,7 @@ public class DatabaseGUI extends JFrame {
 
         int status = DatabaseUtilities.deleteArtist(artistID, conn);
         loadArtists();
+        loadSongs();
 
         switch (status) {
             case 0:

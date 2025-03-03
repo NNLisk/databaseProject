@@ -11,13 +11,17 @@ import java.time.format.DateTimeFormatter;
 
 public class DatabaseUtilities {
 
-    /* adds songs to database, and everything else. albums, writers, i lost track. */
+    /*
+     * adds songs to database, and everything else. albums, writers, i lost track.
+     */
+
+    /* BELOW IS ALL ADDER METHODS */
 
     public static void addSong(String name, String artistName, String genre, String album, String producer,
             String writer, String publisher, Integer songlength, Connection conn) {
         String query = "INSERT INTO song (songID, songName, artistID, genreName, albumName, producerName, writerName, publisherName, dateOfPublish, songlength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String checkArtist = "SELECT artistID FROM artist WHERE artistName = ?";
-        
+
         String artistID = null;
 
         LocalDate today = LocalDate.now();
@@ -25,12 +29,11 @@ public class DatabaseUtilities {
 
         String id = uniqueID("song");
         System.out.println("checking artist");
-        
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(checkArtist);
             ps.setString(1, artistName);
-            
+
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
                 System.out.println("Artist not found");
@@ -74,12 +77,12 @@ public class DatabaseUtilities {
         String albumID = uniqueID("album");
         Connection conn = App.cp.getConnection();
         System.out.println("adding album");
-        
+
         try {
             PreparedStatement ps = conn.prepareStatement(albumCheck);
             ps.setString(1, albumName);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
                 System.out.println("song already exists");
                 return;
             }
@@ -112,7 +115,7 @@ public class DatabaseUtilities {
             PreparedStatement ps = conn.prepareStatement(genreCheck);
             ps.setString(1, genreName);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()){
+            if (rs.next()) {
                 System.out.println("genre already exists");
                 return;
             }
@@ -215,6 +218,7 @@ public class DatabaseUtilities {
         }
     }
 
+    /* BELOW IS ALL GETTER METHODS */
     public static ResultSet getSongs(Connection conn) {
         String query = "Select * FROM song JOIN artist ON song.artistID = artist.artistID;";
 
@@ -226,6 +230,34 @@ public class DatabaseUtilities {
 
         } catch (SQLException e) {
             System.out.println("Error fetching the songs.");
+        }
+        return null;
+    }
+
+    public static ResultSet getGenres(Connection conn) {
+        String query = "SELECT * FROM genre;";
+
+        try {
+            System.out.println("getting genres");
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery(query);
+            return rs;
+        } catch (Exception e) {
+            System.out.println("Error Fetching the genres");
+        }
+        return null;
+    }
+
+    public static ResultSet getAlbums(Connection conn) {
+        String query = "SELECT * FROM album;";
+
+        try {
+            System.out.println("getting albums");
+            Statement s = conn.createStatement();
+            ResultSet rs = s.executeQuery(query);
+            return rs;
+        } catch (Exception e) {
+            System.out.println("Error Fetching the albums");
         }
         return null;
     }
@@ -243,6 +275,8 @@ public class DatabaseUtilities {
         }
         return null;
     }
+
+    /* BELOW IS DELETE METHODS */
 
     public static int deleteSongs(String songID, Connection conn) {
         String checkSong = "SELECT songid FROM song WHERE songid = ?;";
@@ -334,6 +368,8 @@ public class DatabaseUtilities {
         }
     }
 
+    /* ONE UPDATE SONG NAME METHOD */
+
     public static int updateSongName(Connection conn, String songID, String songName) {
         String checkSongExistence = "SELECT songID FROM song WHERE songID = ?;";
         String query = "UPDATE song SET songName = ? WHERE songID = ?;";
@@ -379,6 +415,8 @@ public class DatabaseUtilities {
             return -1;
         }
     }
+
+    /* RETREIVES UNIQUE ID BASED ON THE TABLE */
 
     public static String uniqueID(String tablename) {
         String id = null;
