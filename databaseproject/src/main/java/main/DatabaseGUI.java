@@ -134,6 +134,9 @@ public class DatabaseGUI extends JFrame {
 
     private void loadSongs() {
         Connection conn = App.cp.getConnection();
+
+        String artistName = null;
+        
         songTableModel.setRowCount(0);
         try {
             ResultSet rs = DatabaseUtilities.getSongs(conn);
@@ -144,7 +147,7 @@ public class DatabaseGUI extends JFrame {
                         songTableModel.addRow(new Object[] {
                                 rs.getString("songID"),
                                 rs.getString("songName"),
-                                rs.getString("artistID"),
+                                artistName,
                                 rs.getString("genreName"),
                                 rs.getString("albumName"),
                                 rs.getString("producerName"),
@@ -212,8 +215,13 @@ public class DatabaseGUI extends JFrame {
         String songPublisher = songInfo.get(6);
         Integer length = Integer.parseInt(songInfo.get(7));
 
-        DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher,
-                length, conn);
+
+        try {
+            DatabaseUtilities.addSong(songname, songArtist, songGenre, songAlbum, songProducer, songWriter, songPublisher,
+                    length, conn);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Artist does not exist, please register artist first", "Error", JOptionPane.ERROR_MESSAGE);
+        }
         loadSongs();
         JOptionPane.showMessageDialog(null, "Song added", "Error", JOptionPane.INFORMATION_MESSAGE);
         App.cp.returnConnection(conn);

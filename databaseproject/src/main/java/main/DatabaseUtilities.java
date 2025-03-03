@@ -14,6 +14,9 @@ public class DatabaseUtilities {
     public static void addSong(String name, String artistName, String genre, String album, String producer,
             String writer, String publisher, Integer songlength, Connection conn) {
         String query = "INSERT INTO song (songID, songName, artistID, genreName, albumName, producerName, writerName, publisherName, dateOfPublish, songlength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String checkArtist = "SELECT artistID FROM artist WHERE artistName = ?";
+        String artistID = null;
+
         boolean exists = true;
         String id = null;
         /* make a unique and nonexisting id */
@@ -42,13 +45,26 @@ public class DatabaseUtilities {
             }
         }
 
+        try {
+            PreparedStatement ps = conn.prepareStatement(checkArtist);
+            ps.setString(1, artistName);
+
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new SQLException("Artist Not Found");
+            }
+            artistID = rs.getString("artistid");
+        } catch (Exception e) {
+            System.out.println("Failed to fetch artists" + e);
+        }
+
         /* sets the parameters and then executes th e prepared statement */
 
         try {
             PreparedStatement ps = conn.prepareStatement(query);
             ps.setString(1, id);
             ps.setString(2, name);
-            ps.setString(3, artistName);
+            ps.setString(3, artistID);
             ps.setString(4, genre);
             ps.setString(5, album);
             ps.setString(6, producer);
