@@ -11,44 +11,25 @@ import java.time.format.DateTimeFormatter;
 
 public class DatabaseUtilities {
 
+    /* adds songs to database, and everything else. albums, writers, i lost track. */
+
     public static void addSong(String name, String artistName, String genre, String album, String producer,
             String writer, String publisher, Integer songlength, Connection conn) {
         String query = "INSERT INTO song (songID, songName, artistID, genreName, albumName, producerName, writerName, publisherName, dateOfPublish, songlength) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String checkArtist = "SELECT artistID FROM artist WHERE artistName = ?";
+        
         String artistID = null;
-
-        boolean exists = true;
-        String id = null;
-        /* make a unique and nonexisting id */
-
-        /* checks whether id exists with prepared statement */
 
         LocalDate today = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
-        while (exists) {
-            id = Integer.toString((int) (Math.random() * 10000));
-            String checkQuery = "SELECT COUNT(*) FROM song WHERE songID = ?";
-
-            try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
-                ps.setString(1, id);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                if (rs.getInt(1) > 0) {
-                    exists = true;
-                } else {
-                    exists = false;
-                }
-            } catch (SQLException e) {
-                System.err.println(e);
-                System.err.println("failed to fetch songs");
-            }
-        }
-
+        String id = uniqueID("song");
+        
+        
         try {
             PreparedStatement ps = conn.prepareStatement(checkArtist);
             ps.setString(1, artistName);
-
+            
             ResultSet rs = ps.executeQuery();
             if (!rs.next()) {
                 throw new SQLException("Artist Not Found");
@@ -57,6 +38,9 @@ public class DatabaseUtilities {
         } catch (Exception e) {
             System.out.println("Failed to fetch artists" + e);
         }
+        
+        addAlbum(album, artistID);
+        addGenre(genre);
 
         /* sets the parameters and then executes th e prepared statement */
 
@@ -80,29 +64,119 @@ public class DatabaseUtilities {
         App.cp.returnConnection(conn);
     }
 
+    public static void addAlbum(String albumName, String artistID) {
+        String addAlbum = "INSERT INTO album (albumID, albumName, artistID) VALUES (?, ?, ?);";
+        String albumCheck = "SELECT albumName FROM album WHERE albumName = ?;";
+
+        String albumID = uniqueID("album");
+        Connection conn = App.cp.getConnection();
+        
+        try {
+            PreparedStatement ps = conn.prepareStatement(albumCheck);
+            ps.setString(1, albumName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()){
+                return;
+            }
+
+        } catch (Exception e) {
+            System.err.println(e + "1");
+        }
+        try {
+            PreparedStatement ps = conn.prepareStatement(addAlbum);
+            ps.setString(1, albumID);
+            ps.setString(2, albumName);
+            ps.setString(3, artistID);
+            ps.executeQuery();
+        } catch (Exception e) {
+            System.err.println(e + "2");
+        }
+        App.cp.returnConnection(conn);
+    }
+
+    public static void addGenre(String genreName) {
+        String addGenre = "INSERT INTO genre (genreID, genreName) VALUES (?, ?);";
+        String genreCheck = "SELECT genreName FROM genre WHERE genreName = ?;";
+
+        String genreID = uniqueID("genre");
+        Connection conn = App.cp.getConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(genreCheck);
+            ps.setString(1, genreName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()){
+                return;
+            }
+        } catch (Exception e) {
+            System.err.println(e + "3");
+        }
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(addGenre);
+            ps.setString(1, genreID);
+            ps.setString(2, genreName);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println(e + "4");
+        }
+        App.cp.returnConnection(conn);
+    }
+
+    public static void addWriter(String writerName) {
+        String addWriter = "INSERT INTO writer (writerID, writerName) VALUES (?, ?);";
+        String writerCheck = "SELECT writerName FROM writer WHERE writerName = ?;";
+
+        String writerID = uniqueID("writer");
+        Connection conn = App.cp.getConnection();
+
+        try {
+            PreparedStatement ps = conn.prepareStatement(writerCheck);
+            ps.setString(1, writerName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return;
+            }
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        try {
+            PreparedStatement ps = conn.prepareStatement(addWriter);
+            ps.setString(1, writerID);
+            ps.setString(2, writerName);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+        App.cp.returnConnection(conn);
+    }
+
+    public static void addPublisher(String publisherName) {
+        String addPublisher = "INSERT INTO publisher (publisherID, publisherName) VALUES (?, ?);";
+        String checkPublisher = "SELECT publisherName FROM publisher WHERE publisherName = ?;";
+
+        String pubID = uniqueID("publisher");
+        Connection conn = App.cp.getConnection();
+
+        try {
+            System.out.println("checking publisher existence");
+            PreparedStatement ps = conn.prepareStatement(checkPublisher);
+            ps.setString(1, publisherName);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                System.out.println("publisher already exists");
+                return;
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+
     public static void addArtist(String name, String email, String dob, Connection conn) {
         String query = "INSERT INTO artist (artistid, artistname, artistemail, artistdob) VALUES (?, ?, ?, ?)";
-        boolean exists = true;
         String id = null;
 
-        while (exists) {
-            id = Integer.toString((int) (Math.random() * 10000));
-            String checkQuery = "SELECT COUNT(*) FROM artist WHERE artistid = ?";
-
-            try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
-                ps.setString(1, id);
-                ResultSet rs = ps.executeQuery();
-                rs.next();
-                if (rs.getInt(1) > 0) {
-                    exists = true;
-                } else {
-                    exists = false;
-                }
-            } catch (SQLException e) {
-                System.err.println(e);
-                System.err.println("failed to fetch songs");
-            }
-        }
+        id = uniqueID("artist");
 
         try {
             PreparedStatement ps = conn.prepareStatement(query);
@@ -273,5 +347,32 @@ public class DatabaseUtilities {
             System.err.println(e);
             return -1;
         }
+    }
+
+    public static String uniqueID(String tablename) {
+        String id = null;
+        Connection conn = App.cp.getConnection();
+        boolean exists = true;
+
+        while (exists) {
+            id = Integer.toString((int) (Math.random() * 10000));
+            String checkQuery = "SELECT COUNT(*) FROM " + tablename + " WHERE " + tablename + "ID = ?";
+
+            try (PreparedStatement ps = conn.prepareStatement(checkQuery)) {
+                ps.setString(1, id);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                if (rs.getInt(1) > 0) {
+                    exists = true;
+                } else {
+                    exists = false;
+                }
+            } catch (SQLException e) {
+                System.err.println(e);
+                System.err.println("failed to fetch table");
+                return null;
+            }
+        }
+        return id;
     }
 }
