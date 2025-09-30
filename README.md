@@ -1,7 +1,8 @@
 # DATABASE PROJECT #
 
 # About #
- Database project, music database
+ + Database project, music database
+ + basic CRUD operations with my own database connectionpooling
 
 # TABLES #
 
@@ -58,3 +59,4 @@
 
 
 # ERD #
+
