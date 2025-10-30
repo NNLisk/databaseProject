@@ -1,10 +1,13 @@
-# DATABASE PROJECT #
+# DATABASE PROJECT
 
-# About #
+## About
  + Database project, music database
  + basic CRUD operations with my own database connectionpooling
 
-# TABLES #
+## How to use
+Either the provided MMS.exe or through an JDK runtime
+
+## SQL tables
 
 + Song 
     + ID
@@ -60,4 +63,5 @@
 
 # ERD #
 ![ERD](ERD.jpg)
+
 
